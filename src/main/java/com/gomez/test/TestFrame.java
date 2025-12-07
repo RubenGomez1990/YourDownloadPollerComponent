@@ -26,7 +26,6 @@ public class TestFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // 1. Instanciar el componente
         poller = new MediaPoller();
         
         // 2. Configurar propiedades básicas

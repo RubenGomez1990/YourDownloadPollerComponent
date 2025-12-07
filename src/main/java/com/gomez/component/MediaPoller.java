@@ -128,10 +128,40 @@ public class MediaPoller extends JPanel implements Serializable {
         }
     }
     
+    
+    // WRAPPED METHODS
     public String login(String email, String password) throws Exception {
         if (this.apiClient == null){
             throw new IllegalStateException("API URL no se ha configurado.");
         }
         return this.apiClient.login(email, password);
+    }
+    
+    public String getNickname(int userId) throws Exception {
+        if (this.apiClient == null){
+            throw new IllegalStateException("API URL no se ha configurado.");
+        }
+        return this.apiClient.getNickName(userId, this.token);
+    }
+    
+    public List<Media> getAllMedia() throws Exception {
+         if (this.apiClient == null){
+            throw new IllegalStateException("API URL no se ha configurado.");
+        }
+         return this.apiClient.getAllMedia(token);
+    }
+    
+    public void download(int id, java.io.File destination) throws Exception{
+        if (this.apiClient == null){
+            throw new IllegalStateException("API URL no se ha configurado.");
+        }
+        this.apiClient.download(id, destination, this.token);
+    }
+    
+    public String uploadFileMultipart (java.io.File file, String downloadedFromUrl) throws Exception{
+        if (this.apiClient == null){
+            throw new IllegalStateException("API URL no se ha configurado.");
+        }
+        return this.apiClient.uploadFileMultipart(file, downloadedFromUrl, token);
     }
  }
