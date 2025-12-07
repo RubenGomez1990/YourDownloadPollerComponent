@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
@@ -30,6 +31,7 @@ public class MediaPoller extends JPanel implements Serializable {
     private final List<NewMediaListener> listeners = new ArrayList<>();
     
     public MediaPoller(){
+        this.lastChecked = java.time.OffsetDateTime.now().toString();
         this.setLayout(new BorderLayout());
         this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         // Ponemos un color de fondo
@@ -97,10 +99,23 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
-        System.out.println("Poller: Comprobando nuevos archivos en la API desde: " + this.lastChecked);
+        System.out.println("DEBUG: Token enviado: [" + this.token + "]");
+        
+        // 1. Dar formato legible solo para el log
+        String fechaVisible = java.time.OffsetDateTime.parse(this.lastChecked)
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        // 2. Usar la fecha legible en el chivato
+        System.out.println("Poller: Comprobando nuevos archivos en la API desde: " + fechaVisible);
+        
+        if (this.token == null || this.token.isEmpty()) {
+            System.err.println(">> ERROR: Poller detenido. No se puede consultar la API sin Token (401).");
+            return; 
+        }
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
+            System.out.println("Poller: Consulta exitosa.");
             if (newFiles != null && !newFiles.isEmpty()){
                fireNewMediaEvent(newFiles);
             }
