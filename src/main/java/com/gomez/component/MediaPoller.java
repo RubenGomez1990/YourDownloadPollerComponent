@@ -97,6 +97,7 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
+        System.out.println("Poller: Comprobando nuevos archivos en la API desde: " + this.lastChecked);
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
