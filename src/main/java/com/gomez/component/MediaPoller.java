@@ -34,7 +34,7 @@ public class MediaPoller extends JPanel implements Serializable {
         this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         // Ponemos un color de fondo
         this.setBackground(new java.awt.Color(220, 220, 220));
-        this.label = new JLabel("Etiqueta");
+        this.label = new JLabel("Polling...");
         this.label.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(this.label, BorderLayout.CENTER);
         this.timer = new Timer(this.pollingInterval * 1000, new ActionListener(){
