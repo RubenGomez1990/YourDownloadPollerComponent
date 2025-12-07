@@ -61,9 +61,11 @@ public class MediaPoller extends JPanel implements Serializable {
 
     public void setRunning(boolean running) {
         if (running){
-            timer.start();
+            this.timer.start();
+            this.label.setText("Polling..."); // Texto cuando está activo
         } else {
-            timer.stop();
+            this.timer.stop();
+            this.label.setText("Detenido");   // Texto cuando está parado
         }
         this.running = running;
     }
