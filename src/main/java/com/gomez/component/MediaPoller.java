@@ -92,7 +92,6 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
-        System.out.println("DEBUG: Heartbeat - Comprobando API..."); // <-- AÑADE ESTO
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
@@ -101,7 +100,6 @@ public class MediaPoller extends JPanel implements Serializable {
             }
         } catch (Exception e) {
             System.err.print("No se ha podido cargar los archivos." + e.getMessage());
-            e.printStackTrace();
         }
     } 
     
