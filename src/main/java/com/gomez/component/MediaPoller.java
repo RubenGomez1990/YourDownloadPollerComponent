@@ -3,6 +3,7 @@ package com.gomez.component;
 import com.gomez.model.Media;
 import com.gomez.service.ApiClient;
 import java.awt.BorderLayout;
+import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -33,7 +34,12 @@ public class MediaPoller extends JPanel implements Serializable {
         this.label = new JLabel("Etiqueta");
         this.label.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(this.label, BorderLayout.CENTER);
-        this.timer = new Timer(pollingInterval, null);
+        this.timer = new Timer(this.pollingInterval * 1000, new ActionListener(){
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e){
+                performPoll();
+            }
+        });
     }
 
     public String getApiUrl() {
@@ -86,22 +92,46 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
+        System.out.println("DEBUG: Heartbeat - Comprobando API..."); // <-- AÑADE ESTO
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
             if (newFiles != null && !newFiles.isEmpty()){
-                System.out.println("Tienes " + newFiles.size() + "nuevo/s archivos.");
+               fireNewMediaEvent(newFiles);
             }
         } catch (Exception e) {
             System.err.print("No se ha podido cargar los archivos." + e.getMessage());
+            e.printStackTrace();
         }
     } 
     
+    //Añadir un listener a la lista
     public void addNewMediaListener(NewMediaListener listener) {
         listeners.add(listener);
     }
     
+    //Quitar un listener de la lista.
     public void removeNewMediaListener(NewMediaListener listener){
         listeners.remove(listener);
     }
-}
+    
+    private void fireNewMediaEvent(List<Media> newFiles){
+        //1. convertir fecha desde el String para poder usar un tipo de dato válido
+        OffsetDateTime lastDate = OffsetDateTime.parse(lastChecked);
+        
+        //2. Creamos el evento que se enviará.
+        NewMediaEvent event = new NewMediaEvent(this, newFiles, lastDate);
+        
+        //3. Recorrer la lista con los listeners
+        for (NewMediaListener  listener : listeners){
+            listener.onNewMediaDetected(event);
+        }
+    }
+    
+    public String login(String email, String password) throws Exception {
+        if (this.apiClient == null){
+            throw new IllegalStateException("API URL no se ha configurado.");
+        }
+        return this.apiClient.login(email, password);
+    }
+ }
