@@ -5,6 +5,7 @@ import com.gomez.service.ApiClient;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,6 +25,8 @@ public class MediaPoller extends JPanel implements Serializable {
     private ApiClient apiClient;
     private Timer timer;
     private JLabel label;
+    // Creamos una lista que recibirá todos los listeners desde la clase NewMediaListener
+    private final List<NewMediaListener> listeners = new ArrayList<>();
     
     public MediaPoller(){
         this.setLayout(new BorderLayout());
@@ -93,4 +96,12 @@ public class MediaPoller extends JPanel implements Serializable {
             System.err.print("No se ha podido cargar los archivos." + e.getMessage());
         }
     } 
+    
+    public void addNewMediaListener(NewMediaListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void removeNewMediaListener(NewMediaListener listener){
+        listeners.remove(listener);
+    }
 }
