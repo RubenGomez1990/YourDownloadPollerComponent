@@ -18,7 +18,7 @@ import javax.swing.Timer;
 public class MediaPoller extends JPanel implements Serializable {
     private String apiUrl;
     private boolean running;
-    private int pollingInterval;
+    private int pollingInterval = 10;
     private String token;
     private String lastChecked;
     private ApiClient apiClient;
@@ -84,9 +84,13 @@ public class MediaPoller extends JPanel implements Serializable {
     // MÉTODOS
     private void performPoll(){
         try {
-            List<Media> newFiles = this.apiClient.getMediaAddedSince(OffsetDateTime.MIN, token);
+            List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
+            this.lastChecked = OffsetDateTime.now().toString();
+            if (newFiles != null && !newFiles.isEmpty()){
+                System.out.println("Tienes " + newFiles.size() + "nuevo/s archivos.");
+            }
         } catch (Exception e) {
-            
+            System.err.print("No se ha podido cargar los archivos." + e.getMessage());
         }
     } 
 }
