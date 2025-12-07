@@ -1,3 +1,6 @@
 /target/
 /nbproject/private/
 /test/
+# Forzar la inclusión del repositorio local de Maven
+!repo/
+!repo/**/*.jar
