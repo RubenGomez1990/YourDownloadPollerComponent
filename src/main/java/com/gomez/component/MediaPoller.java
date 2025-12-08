@@ -126,7 +126,7 @@ public class MediaPoller extends JPanel implements Serializable {
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
-            System.out.println("Poller: Sucessful query.");
+            System.out.println("Poller: Successful query.");
             if (newFiles != null && !newFiles.isEmpty()){
                 fireNewMediaEvent(newFiles);
             }
