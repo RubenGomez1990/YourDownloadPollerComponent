@@ -64,10 +64,10 @@ public class MediaPoller extends JPanel implements Serializable {
     public void setRunning(boolean running) {
         if (running){
             this.timer.start();
-            this.label.setText("Polling..."); // Texto cuando está activo
+            this.label.setText("Polling"); // Texto cuando está activo
         } else {
             this.timer.stop();
-            this.label.setText("Detenido");   // Texto cuando está parado
+            this.label.setText("Stopped");   // Texto cuando está parado
         }
         this.running = running;
     }
@@ -99,28 +99,28 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
-        System.out.println("DEBUG: Token enviado: [" + this.token + "]");
+        System.out.println("Token sended: [" + this.token + "]");
         
         // 1. Dar formato legible solo para el log
         String fechaVisible = java.time.OffsetDateTime.parse(this.lastChecked)
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         // 2. Usar la fecha legible en el chivato
-        System.out.println("Poller: Comprobando nuevos archivos en la API desde: " + fechaVisible);
+        System.out.println("Poller: checking for new archives from API since: " + fechaVisible);
         
         if (this.token == null || this.token.isEmpty()) {
-            System.err.println(">> ERROR: Poller detenido. No se puede consultar la API sin Token (401).");
+            System.err.println("Poller: stopped. Can't check API without token (Error 401)");
             return; 
         }
         try {
             List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
             this.lastChecked = OffsetDateTime.now().toString();
-            System.out.println("Poller: Consulta exitosa.");
+            System.out.println("Poller: Sucessful query.");
             if (newFiles != null && !newFiles.isEmpty()){
                fireNewMediaEvent(newFiles);
             }
         } catch (Exception e) {
-            System.err.print("No se ha podido cargar los archivos." + e.getMessage());
+            System.err.print("Couldn't load the files." + e.getMessage());
         }
     } 
     
