@@ -3,6 +3,7 @@ package com.gomez.component;
 import com.gomez.model.Media;
 import com.gomez.service.ApiClient;
 import java.awt.BorderLayout;
+import java.awt.Color; // Importamos Color
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -34,17 +35,37 @@ public class MediaPoller extends JPanel implements Serializable {
         this.lastChecked = java.time.OffsetDateTime.now().toString();
         this.setLayout(new BorderLayout());
         this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        // Ponemos un color de fondo
-        this.setBackground(new java.awt.Color(220, 220, 220));
+        
         this.label = new JLabel("Polling...");
         this.label.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(this.label, BorderLayout.CENTER);
+        
         this.timer = new Timer(this.pollingInterval * 1000, new ActionListener(){
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e){
                 performPoll();
             }
         });
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running; // Primero actualizamos la variable de estado
+        
+        // Implementación de la lógica de colores y texto
+        if (running){
+            this.timer.start();
+            this.setBackground(Color.GREEN);
+            this.label.setForeground(Color.BLACK);
+            this.label.setText("Polling: ACTIVE");
+        } else {
+            this.timer.stop();
+            this.setBackground(Color.RED);
+            this.label.setForeground(Color.WHITE);
+            this.label.setText("Polling: STOPPED");
+        }
+        
+        this.setOpaque(true); 
+        this.repaint();
     }
 
     public String getApiUrl() {
@@ -59,17 +80,6 @@ public class MediaPoller extends JPanel implements Serializable {
 
     public boolean isRunning() {
         return running;
-    }
-
-    public void setRunning(boolean running) {
-        if (running){
-            this.timer.start();
-            this.label.setText("Polling"); // Texto cuando está activo
-        } else {
-            this.timer.stop();
-            this.label.setText("Stopped");   // Texto cuando está parado
-        }
-        this.running = running;
     }
 
     public int getPollingInterval() {
@@ -99,6 +109,7 @@ public class MediaPoller extends JPanel implements Serializable {
     
     // MÉTODOS
     private void performPoll(){
+        // ... (Tu lógica de performPoll SIN CAMBIOS) ...
         System.out.println("Token sended: [" + this.token + "]");
         
         // 1. Dar formato legible solo para el log
@@ -117,7 +128,7 @@ public class MediaPoller extends JPanel implements Serializable {
             this.lastChecked = OffsetDateTime.now().toString();
             System.out.println("Poller: Sucessful query.");
             if (newFiles != null && !newFiles.isEmpty()){
-               fireNewMediaEvent(newFiles);
+                fireNewMediaEvent(newFiles);
             }
         } catch (Exception e) {
             System.err.print("Couldn't load the files." + e.getMessage());
@@ -164,10 +175,10 @@ public class MediaPoller extends JPanel implements Serializable {
     }
     
     public List<Media> getAllMedia() throws Exception {
-         if (this.apiClient == null){
+          if (this.apiClient == null){
             throw new IllegalStateException("API URL no se ha configurado.");
         }
-         return this.apiClient.getAllMedia(token);
+          return this.apiClient.getAllMedia(token);
     }
     
     public void download(int id, java.io.File destination) throws Exception{
