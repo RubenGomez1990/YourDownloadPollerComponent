@@ -14,6 +14,8 @@ public class Media {
     public String mediaFileName;
     @JsonProperty("mediaMimeType")
     public String mediaMimeType;
+    @JsonProperty("mediaFileSize")
+    public long mediaFileSize;
     @JsonProperty("blobNameGuid")
     public String blobNameGuid;
     @JsonProperty("blobUrl")
