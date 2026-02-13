@@ -20,6 +20,7 @@ import javax.swing.Timer;
  * @author Rubén Gómez Hernández
  */
 public class MediaPoller extends JPanel implements Serializable {
+
     private String apiUrl;
     private boolean running;
     private int pollingInterval = 10;
@@ -30,19 +31,19 @@ public class MediaPoller extends JPanel implements Serializable {
     private JLabel label;
     // Creamos una lista que recibirá todos los listeners desde la clase NewMediaListener
     private final List<NewMediaListener> listeners = new ArrayList<>();
-    
-    public MediaPoller(){
-        this.lastChecked = java.time.OffsetDateTime.now().toString();
+
+    public MediaPoller() {
+        this.lastChecked = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).toString();
         this.setLayout(new BorderLayout());
         this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        
+
         this.label = new JLabel("Polling...");
         this.label.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(this.label, BorderLayout.CENTER);
-        
-        this.timer = new Timer(this.pollingInterval * 1000, new ActionListener(){
+
+        this.timer = new Timer(this.pollingInterval * 1000, new ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent e){
+            public void actionPerformed(java.awt.event.ActionEvent e) {
                 performPoll();
             }
         });
@@ -50,9 +51,9 @@ public class MediaPoller extends JPanel implements Serializable {
 
     public void setRunning(boolean running) {
         this.running = running; // Primero actualizamos la variable de estado
-        
+
         // Implementación de la lógica de colores y texto
-        if (running){
+        if (running) {
             this.timer.start();
             this.setBackground(Color.GREEN);
             this.label.setForeground(Color.BLACK);
@@ -63,8 +64,8 @@ public class MediaPoller extends JPanel implements Serializable {
             this.label.setForeground(Color.WHITE);
             this.label.setText("Polling: STOPPED");
         }
-        
-        this.setOpaque(true); 
+
+        this.setOpaque(true);
         this.repaint();
     }
 
@@ -73,7 +74,7 @@ public class MediaPoller extends JPanel implements Serializable {
     }
 
     public void setApiUrl(String apiUrl) {
-        if (apiUrl != null && !apiUrl.isEmpty()){
+        if (apiUrl != null && !apiUrl.isEmpty()) {
             this.apiClient = new ApiClient(apiUrl);
         }
     }
@@ -106,92 +107,105 @@ public class MediaPoller extends JPanel implements Serializable {
     public void setLastChecked(String lastChecked) {
         this.lastChecked = lastChecked;
     }
-    
-    // MÉTODOS
-    private void performPoll(){
-        // ... (Tu lógica de performPoll SIN CAMBIOS) ...
-        System.out.println("Token sended: [" + this.token + "]");
-        
-        // 1. Dar formato legible solo para el log
-        String fechaVisible = java.time.OffsetDateTime.parse(this.lastChecked)
-            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        // 2. Usar la fecha legible en el chivato
-        System.out.println("Poller: checking for new archives from API since: " + fechaVisible);
-        
+    // MÉTODOS
+    private void performPoll() {
         if (this.token == null || this.token.isEmpty()) {
-            System.err.println("Poller: stopped. Can't check API without token (Error 401)");
-            return; 
+            return;
         }
+
+        // 1. Log del Token simplificado (sin el chorizo de caracteres)
+        System.out.println("Token sended.");
+
         try {
-            List<Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
-            this.lastChecked = OffsetDateTime.now().toString();
-            System.out.println("Poller: Successful query.");
-            if (newFiles != null && !newFiles.isEmpty()){
+            // 2. Preparamos el formato de fecha y hora (yyyy-MM-dd HH:mm:ss)
+            java.time.format.DateTimeFormatter customFormatter
+                    = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            // 3. Convertimos la fecha actual de lastChecked para el log
+            String readableDate = java.time.OffsetDateTime.parse(this.lastChecked)
+                    .format(customFormatter);
+
+            // 4. Imprimimos el log con el formato unificado que pediste
+            System.out.println("Poller: checking for new archives from API since: " + readableDate);
+
+            // Llamada a la API
+            List<com.gomez.model.Media> newFiles = this.apiClient.getMediaAddedSince(this.lastChecked, token);
+
+            int count = (newFiles != null) ? newFiles.size() : 0;
+
+            // Solo imprimimos si hay éxito y cuántos hay, para no saturar la consola si hay 0
+            if (count > 0) {
+                System.out.println("Poller: Successful query. Detected [" + count + "] new files.");
                 fireNewMediaEvent(newFiles);
             }
+
+            // 5. Actualizamos el tiempo con el margen de seguridad (30 seg para Real-Time)
+            this.lastChecked = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)
+                    .minusSeconds(30)
+                    .toString();
+
         } catch (Exception e) {
-            System.err.print("Couldn't load the files." + e.getMessage());
+            System.err.println("Poller: API Error -> " + e.getMessage());
         }
-    } 
-    
+    }
+
     //Añadir un listener a la lista
     public void addNewMediaListener(NewMediaListener listener) {
         listeners.add(listener);
     }
-    
+
     //Quitar un listener de la lista.
-    public void removeNewMediaListener(NewMediaListener listener){
+    public void removeNewMediaListener(NewMediaListener listener) {
         listeners.remove(listener);
     }
-    
-    private void fireNewMediaEvent(List<Media> newFiles){
+
+    private void fireNewMediaEvent(List<Media> newFiles) {
         //1. convertir fecha desde el String para poder usar un tipo de dato válido
         OffsetDateTime lastDate = OffsetDateTime.parse(lastChecked);
-        
+
         //2. Creamos el evento que se enviará.
         NewMediaEvent event = new NewMediaEvent(this, newFiles, lastDate);
-        
+
         //3. Recorrer la lista con los listeners
-        for (NewMediaListener  listener : listeners){
+        for (NewMediaListener listener : listeners) {
             listener.onNewMediaDetected(event);
         }
     }
-    
-    
+
     // WRAPPED METHODS
     public String login(String email, String password) throws Exception {
-        if (this.apiClient == null){
+        if (this.apiClient == null) {
             throw new IllegalStateException("API URL no se ha configurado.");
         }
         return this.apiClient.login(email, password);
     }
-    
+
     public String getNickname(int userId) throws Exception {
-        if (this.apiClient == null){
+        if (this.apiClient == null) {
             throw new IllegalStateException("API URL no se ha configurado.");
         }
         return this.apiClient.getNickName(userId, this.token);
     }
-    
+
     public List<Media> getAllMedia() throws Exception {
-          if (this.apiClient == null){
+        if (this.apiClient == null) {
             throw new IllegalStateException("API URL no se ha configurado.");
         }
-          return this.apiClient.getAllMedia(token);
+        return this.apiClient.getAllMedia(token);
     }
-    
-    public void download(int id, java.io.File destination) throws Exception{
-        if (this.apiClient == null){
+
+    public void download(int id, java.io.File destination) throws Exception {
+        if (this.apiClient == null) {
             throw new IllegalStateException("API URL no se ha configurado.");
         }
         this.apiClient.download(id, destination, this.token);
     }
-    
-    public String uploadFileMultipart (java.io.File file, String downloadedFromUrl) throws Exception{
-        if (this.apiClient == null){
+
+    public String uploadFileMultipart(java.io.File file, String downloadedFromUrl) throws Exception {
+        if (this.apiClient == null) {
             throw new IllegalStateException("API URL no se ha configurado.");
         }
         return this.apiClient.uploadFileMultipart(file, downloadedFromUrl, token);
     }
- }
+}
