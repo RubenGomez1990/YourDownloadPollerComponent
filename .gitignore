@@ -1,6 +1,45 @@
+# --- Directorios de Compilación y NetBeans ---
 /target/
 /nbproject/private/
+/build/
+/dist/
+/nbbin/
+
+# --- Binarios y Ejecutables ---
+*.exe
+*.jar
+*.war
+*.nar
+*.ear
+*.dll
+*.so
+*.dylib
+*.mp4
+*.mkv
+*.avi
+*.mov
+
+# --- Archivos de proyecto de IDEs ---
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+.nb-gradle/
+
+# --- Archivos comprimidos ---
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# --- Logs y archivos temporales ---
+*.log
 /test/
-# Forzar la inclusión del repositorio local de Maven
-!repo/
-!repo/**/*.jar
+hs_err_pid*
+replay_pid*
+.mtj.tmp/
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db
