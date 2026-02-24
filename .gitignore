@@ -8,6 +8,7 @@
 # --- Binarios y Ejecutables ---
 *.exe
 *.jar
+!target/YourDownloadPoller-1.0-SNAPSHOT.jar
 *.war
 *.nar
 *.ear
